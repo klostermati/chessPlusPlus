@@ -7,10 +7,11 @@
 #include<string>
 using namespace std;
 
-//enum class GameStatus {InPrep, Playing, Finished};
-enum class PlayerStatus {Playing, Lost, Won};
-enum class PiecesOrderStyle {Standard};
-enum class GameRules {Standard};
+enum class PlayerStatus {Playing, Lost}; // Last player in Playing condition is the winner
+enum class PiecesOrderStyle {Standard, Baby, TwoKings, ThreePlayerVariation};
+enum class CondToWin {KillKing, KillQueen};
+
+void clearScreen();
 
 class Player{
     public:
@@ -43,9 +44,9 @@ class Board{
     public:
         virtual void orderPieces(const vector<Player*> &playerList, PiecesOrderStyle order_style = PiecesOrderStyle::Standard) = 0;
         virtual void showBoard() = 0;
-        virtual bool movePiece(int i_row, int i_col, int f_row, int f_col, GameRules gameRules) = 0;
+        virtual bool movePiece(int i_row, int i_col, int f_row, int f_col, CondToWin condToWin) = 0;
         virtual Piece* getPiece(int row, int col) = 0;
-        virtual bool isKingOfPlayerMissing(int playerId) = 0;
+        virtual bool isPieceOfPlayerMissing(char piece, int playerId) = 0;
 };
 
 class TwoDimBoard;
@@ -79,9 +80,7 @@ struct TwoDimShape{
 
 class TwoDimBoard : public Board{
     public:
-        TwoDimBoard(TwoDimShape shape_, PiecesOrderStyle order_style = PiecesOrderStyle::Standard, uint n_players = 2)
-            : shape(move(shape_))
-        {
+        TwoDimBoard(TwoDimShape shape_) : shape(move(shape_)) {
             board_pieces = new Piece**[shape.rows];
             for(int row = 0; row < shape.rows; row++){
                 board_pieces[row] = new Piece*[shape.cols];
@@ -106,8 +105,8 @@ class TwoDimBoard : public Board{
         }
         void orderPieces(const vector<Player*>&, PiecesOrderStyle);
         void showBoard();
-        bool movePiece(int i_row, int i_col, int f_row, int f_col, GameRules gameRules);
-        bool isKingOfPlayerMissing(int playerId);
+        bool movePiece(int i_row, int i_col, int f_row, int f_col, CondToWin condToWin);
+        bool isPieceOfPlayerMissing(char piece, int playerId);
     private:
         TwoDimShape shape;
         Piece ***board_pieces; // Each element of the 2d array is a pointer to a object of class Piece
@@ -352,11 +351,7 @@ class TwoDimStdQueen : public TwoDimPiece{
 
 class ChessGame {
     public:
-        ChessGame(int num_players_)
-            : board(nullptr)
-            , num_players(num_players_) 
-            , game_rules(GameRules::Standard){
-        }
+        ChessGame(CondToWin condToWin = CondToWin::KillKing) : board(nullptr) {}
         void addBoard(Board &board_){
             board = &board_;
         }
@@ -369,13 +364,10 @@ class ChessGame {
             players.push_back(player_to_add);
             return player_to_add;
         }
-        void setGameRules(GameRules game_rules_){
-            game_rules = game_rules_;
+        void setCondToWin(CondToWin condToWin_){
+            condToWin = condToWin_;
         }
         void startGame(PiecesOrderStyle orderStyle = PiecesOrderStyle::Standard){
-            // Check if combination of status, board, num_players, list players.size(), game_rules is compatible
-            // or return
-
             // Order pieces
             board->orderPieces(players, orderStyle);
 
@@ -384,8 +376,7 @@ class ChessGame {
             int cur_player = -1;
             while(1) {
                 cur_player++;
-                system("cls");      // windows
-                system("clear");    // linux
+                clearScreen();
                 if(winnerId == -1)
                     cout << "cur player: " << players[cur_player]->getName() << endl;
                 // TODO: check if player is in playing state
@@ -412,7 +403,7 @@ class ChessGame {
                     cin >> input;
                     f_row = input / 10 - 1;
                     f_col = input % 10 - 1;
-                    if(board->movePiece(i_row, i_col, f_row, f_col, game_rules))
+                    if(board->movePiece(i_row, i_col, f_row, f_col, condToWin))
                         played = true;
                     
                 } while (played == false);
@@ -426,33 +417,32 @@ class ChessGame {
         }
         int updatePlayersStatus(){ // Returns id of winner or -1 in case there's no winner yet
             int winnerId = -1;
+            int nPlaying = 0;
+            char piece;
+            if(condToWin == CondToWin::KillKing)
+                piece = 'K';
+            else if(condToWin == CondToWin::KillQueen)
+                piece = 'q';
 
-            if(game_rules == GameRules::Standard){
-                int nPlaying = 0;
-
-                for(const auto& p: players){
-                    if(p->getStatus() == PlayerStatus::Lost)
-                        continue;
-                    if(board->isKingOfPlayerMissing(p->getId())) {
-                        p->setStatus(PlayerStatus::Lost);
-                    } else {
-                        nPlaying++;
-                        if(nPlaying == 1)
-                            winnerId = p->getId();
-                        else
-                            winnerId = -1;
-                    }
+            for(const auto& p: players){
+                if(p->getStatus() == PlayerStatus::Lost)
+                    continue;
+                if(board->isPieceOfPlayerMissing(piece ,p->getId())) {
+                    p->setStatus(PlayerStatus::Lost);
+                } else {
+                    nPlaying++;
+                    if(nPlaying == 1)
+                        winnerId = p->getId();
+                    else
+                        winnerId = -1;
                 }
-            } else {
-                cout << "GameRules not fully implemented" << endl;
             }
             return winnerId;
         }
     private:
         Board *board;
-        int num_players;
         vector<Player*> players;
-        GameRules game_rules;
+        CondToWin condToWin;
 };
 
 #endif
