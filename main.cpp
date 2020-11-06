@@ -2,10 +2,13 @@
 #include "lib/func.hpp"
 using namespace std;
 
+
 int main(void) {
     int mode;
     clearScreen();
     cout << "Welcome to chess++" << endl << endl;
+    cout << "Example of chess notation used to indicate the position of a piece:" << endl;
+    cout << "b3 means the position of the second column and third row" << endl << endl;
     cout << "Game modes available: " << endl;
     cout << "\t1 : Standard mode" << endl;
     cout << "\t2 : Baby mode (5x5 board)" << endl;
@@ -43,7 +46,7 @@ int main(void) {
         my_game.setCondToWin(CondToWin::KillKing);
         my_game.startGame(PiecesOrderStyle::TwoKings);
     } else if(mode == 4){ // Three players mode
-        TwoDimShape my_std_board_shape = {10,10};
+        TwoDimShape my_std_board_shape = {9,10};
         TwoDimBoard my_std_board(my_std_board_shape);
         ChessGame my_game(CondToWin::KillKing);
         my_game.addBoard(my_std_board);

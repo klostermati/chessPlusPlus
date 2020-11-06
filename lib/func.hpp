@@ -5,6 +5,7 @@
 #include<vector>
 #include<list>
 #include<string>
+#include<map>
 using namespace std;
 
 enum class PlayerStatus {Playing, Lost}; // Last player in Playing condition is the winner
@@ -15,10 +16,11 @@ void clearScreen();
 
 class Player{
     public:
-        Player(string name_, int id_)
+        Player(string name_, int id_, char sign_)
             : id(id_)
             , name(move(name_))
-            , status(PlayerStatus::Playing) {
+            , status(PlayerStatus::Playing)
+            , sign(sign_){
         }
         int getId(){
             return id;
@@ -32,10 +34,14 @@ class Player{
         void setStatus(PlayerStatus playerStatus){
             status = playerStatus;
         }
+        char getSign(){
+            return sign;
+        }
     private:
         int id;
         string name;
         PlayerStatus status;
+        char sign;
 };
 
 class Piece;
@@ -47,16 +53,27 @@ class Board{
         virtual bool movePiece(int i_row, int i_col, int f_row, int f_col, CondToWin condToWin) = 0;
         virtual Piece* getPiece(int row, int col) = 0;
         virtual bool isPieceOfPlayerMissing(char piece, int playerId) = 0;
+        virtual void deletePlayer(int playerId) = 0;
 };
 
 class TwoDimBoard;
 
 class Piece{
     public:
-        Piece(Player *owner_, int value_, char c_) 
+        static map<char, string> whites_map;
+        static map<char, string> blacks_map;
+        static map<char, string> third_player_map;
+        Piece(Player *owner_, int value_, char id_) 
             : owner(owner_)
             , value(value_)
-            , c(c_){
+            , id(id_){
+            if(owner->getId() == 0){ // white
+                symbol = whites_map[id];
+            } else if (owner->getId() == 1){ // black
+                symbol = blacks_map[id];
+            } else {
+                symbol = third_player_map[id];
+            }
         }
         virtual bool allowedMove(int i_row, int i_col, int f_row, int f_col, TwoDimBoard* board) = 0;
         Player* getOwner(){
@@ -65,14 +82,22 @@ class Piece{
         int getValue(){
             return value;
         }
-        char getChar(){
-            return c;
+        char getId(){
+            return id;
+        }
+        string getSymbol(){
+            return symbol;
         }
     private:
         Player *owner;
         int value;
-        char c;
+        char id;
+        string symbol;
 };
+
+// map<char, string> Piece::whites_map = { { 'p', "\u2659"}, { 'r', "\u2656" }, { 'k', "\u2658" }, { 'b', "\u2657" }, { 'q', "\u2655" }, { 'K', "\u2658" } };
+// map<char, string> Piece::blacks_map = { { 'p', "\u2659"}, { 'r', "\u2656" }, { 'k', "\u2658" }, { 'b', "\u2657" }, { 'q', "\u2655" }, { 'K', "\u2658" } };
+// map<char, string> Piece::third_player_map = { { 'p', "\u2659"}, { 'r', "\u2656" }, { 'k', "\u2658" }, { 'b', "\u2657" }, { 'q', "\u2655" }, { 'K', "\u2658" } };
 
 struct TwoDimShape{
     int rows, cols;
@@ -96,6 +121,8 @@ class TwoDimBoard : public Board{
             return shape;
         }
         Piece* getPiece(int row, int col){
+            if(row < 0 || shape.rows <= row || col < 0 || shape.cols <= col)
+                return nullptr;
             return board_pieces[row][col];
         }
         bool isFree(int row, int col){
@@ -107,6 +134,7 @@ class TwoDimBoard : public Board{
         void showBoard();
         bool movePiece(int i_row, int i_col, int f_row, int f_col, CondToWin condToWin);
         bool isPieceOfPlayerMissing(char piece, int playerId);
+        void deletePlayer(int playerId);
     private:
         TwoDimShape shape;
         Piece ***board_pieces; // Each element of the 2d array is a pointer to a object of class Piece
@@ -117,7 +145,7 @@ class TwoDimBoard : public Board{
 
 class TwoDimPiece : public Piece {
     public:
-        TwoDimPiece(Player *owner_, int value_, char c_) : Piece(owner_, value_, c_){}
+        TwoDimPiece(Player *owner_, int value_, char id_) : Piece(owner_, value_, id_){}
         bool isOutBoard(int f_row, int f_col, int rows, int cols){
             if(f_row < 0 || f_row >= rows || f_col < 0 || f_col >= cols)
                 return true;
@@ -283,6 +311,9 @@ class TwoDimStdKnight : public TwoDimPiece {
                 return false;
             if( ((abs(i_row - f_row) != 1) || (abs(i_col - f_col) != 2)) && ((abs(i_row - f_row) != 2) || (abs(i_col - f_col) != 1)) )
                 return false;
+            if(board->getPiece(f_row,f_col) != nullptr)
+                if(board->getPiece(f_row, f_col)->getOwner()->getId() == this->getOwner()->getId() )
+                    return false;
             return true;
         }
 };
@@ -299,6 +330,9 @@ class TwoDimStdKing : public TwoDimPiece{
                 return false;
             if(abs(i_row - f_row) > 1 || abs(i_col - f_col) > 1)
                 return false;
+            if(board->getPiece(f_row,f_col) != nullptr)
+                if(board->getPiece(f_row, f_col)->getOwner()->getId() == this->getOwner()->getId() )
+                    return false;
             return true;
         }
 };
@@ -356,11 +390,8 @@ class ChessGame {
             board = &board_;
         }
         Player* addPlayer(const string &name) {
-            if(players.size() == 2 ){
-                cout << "Mssg: max number of players is 2" << endl;
-                return nullptr;
-            }
-            Player *player_to_add = new Player(name, players.size());
+            map<int, char> signs_map = { {0,'*'}, {1,'^'}, {2,'@'} };
+            Player *player_to_add = new Player(name, players.size(), signs_map[players.size()]);
             players.push_back(player_to_add);
             return player_to_add;
         }
@@ -375,23 +406,27 @@ class ChessGame {
             int num_players = players.size();
             int cur_player = -1;
             while(1) {
+                if( (cur_player+1) == players.size())
+                        cur_player = -1;
                 cur_player++;
+                if(players[cur_player]->getStatus() == PlayerStatus::Lost)
+                    continue;
+               
                 clearScreen();
-                if(winnerId == -1)
-                    cout << "cur player: " << players[cur_player]->getName() << endl;
-                // TODO: check if player is in playing state
                 board->showBoard();
                 if(winnerId != -1)
                     break;
+                showPlayers(cur_player);
                 bool played = false;
-                int input, i_row, i_col, f_row, f_col;
+                string input, str_i_row, str_i_col, str_f_row, str_f_col;
+                int i_row, f_row, i_col, f_col;
                 do {
-                    cout << "Initial row and column of piece to move: ";
+                    cout << "Initial position of piece to move: ";
                     cin >> input;
-                    i_row = input / 10 - 1;
-                    i_col = input % 10 - 1;
+                    i_row = char(input[1] - 49);
+                    i_col = char(input[0]) - 97;
                     if( board->getPiece(i_row, i_col) == nullptr ){
-                        cout << "Empty place" << endl;
+                        cout << "Try again" << endl;
                         continue;
                     }
                     if( cur_player != board->getPiece(i_row, i_col)->getOwner()->getId() ){
@@ -399,19 +434,18 @@ class ChessGame {
                         continue;
                     }
 
-                    cout << "Final row and column of piece to move: ";
+                    cout << "Final position of piece to move: ";
                     cin >> input;
-                    f_row = input / 10 - 1;
-                    f_col = input % 10 - 1;
+                    f_row = char(input[1] - 49);
+                    f_col = char(input[0]) - 97;
                     if(board->movePiece(i_row, i_col, f_row, f_col, condToWin))
                         played = true;
+                    else
+                        cout << "Try again" << endl;
                     
                 } while (played == false);
 
                 winnerId = updatePlayersStatus();
-
-                if( (cur_player+1) == players.size())
-                        cur_player = -1;
             }
             cout << players[winnerId]->getName() << " is the winner" << endl;
         }
@@ -429,6 +463,7 @@ class ChessGame {
                     continue;
                 if(board->isPieceOfPlayerMissing(piece ,p->getId())) {
                     p->setStatus(PlayerStatus::Lost);
+                    board->deletePlayer(p->getId());
                 } else {
                     nPlaying++;
                     if(nPlaying == 1)
@@ -438,6 +473,18 @@ class ChessGame {
                 }
             }
             return winnerId;
+        }
+        void showPlayers(int curPlayer){
+            cout << "Players:" << endl;
+            for(const auto& p: players){
+                if(p->getStatus() == PlayerStatus::Lost)
+                    continue;
+                cout << "\t" << p->getName() << "\t (" << p->getSign() << ")";
+                if (p->getId() == curPlayer)
+                    cout << "\t <---";
+                cout << endl;
+            }
+            cout << endl;
         }
     private:
         Board *board;
