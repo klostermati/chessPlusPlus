@@ -1,8 +1,8 @@
 #include "func.hpp"
 using namespace std;
 
-map<char, string> Piece::whites_map = { { 'p', "\u265F"}, { 'r', "\u265C" }, { 'k', "\u265E" }, { 'b', "\u265D" }, { 'q', "\u265B" }, { 'K', "\u265A" } };
-map<char, string> Piece::blacks_map = { { 'p', "\u2659"}, { 'r', "\u2656" }, { 'k', "\u2658" }, { 'b', "\u2657" }, { 'q', "\u2655" }, { 'K', "\u2654" } };
+map<char, string> Piece::whites_map = { { 'p', "\u2659"}, { 'r', "\u2656" }, { 'k', "\u2658" }, { 'b', "\u2657" }, { 'q', "\u2655" }, { 'K', "\u2654" } };
+map<char, string> Piece::blacks_map = { { 'p', "\u265F"}, { 'r', "\u265C" }, { 'k', "\u265E" }, { 'b', "\u265D" }, { 'q', "\u265B" }, { 'K', "\u265A" } };
 map<char, string> Piece::third_player_map = { { 'p', "\u2659"}, { 'r', "\u2656" }, { 'k', "\u2658" }, { 'b', "\u2657" }, { 'q', "\u2655" }, { 'K', "\u2654" } };
 
 void clearScreen(){
@@ -15,6 +15,9 @@ Player::Player(string name_, int id_, char sign_)
     , name(move(name_))
     , status(PlayerStatus::Playing)
     , sign(sign_){
+}
+
+Player::~Player(){
 }
 
 int Player::getId(){
@@ -41,6 +44,7 @@ Piece::Piece(Player *owner_, int value_, char id_)
     : owner(owner_)
     , value(value_)
     , id(id_) {
+    cout << "Piece const" << endl;
     if(owner->getId() == 0){ // white
         symbol = whites_map[id];
     } else if (owner->getId() == 1){ // black
@@ -48,6 +52,9 @@ Piece::Piece(Player *owner_, int value_, char id_)
     } else {
         symbol = third_player_map[id];
     }
+}
+
+Piece::~Piece(){
 }
 
 Player* Piece::getOwner(){
@@ -73,8 +80,16 @@ TwoDimBoard::TwoDimBoard(TwoDimShape shape_) : shape(move(shape_)) {
     }
 }
 
+Board::~Board(){
+}
+
 TwoDimBoard::~TwoDimBoard(){
     // TODO: Delete news
+    cout << "TwoDimBoard dest" << endl;
+    for(int row = 0; row < shape.rows; row++){
+        delete[] board_pieces[row];
+    }
+    delete[] board_pieces;
 }
 
 Piece* TwoDimBoard::getPiece(int row, int col){
@@ -218,7 +233,7 @@ void TwoDimBoard::showBoard(){
             ptrPiece = getPiece(row, col);
             ptrPiece == nullptr ? pieceSymbol = ' ' : pieceSymbol = ptrPiece->getSymbol();
             ptrPiece == nullptr ? playerSign = ' ' : playerSign = ptrPiece->getOwner()->getSign();
-            cout << "| "<< playerSign << pieceSymbol << playerSign <<" ";
+            cout << "| "<< playerSign << pieceSymbol << "  ";
         }
         cout << "|" << endl << "   ";
         for(int i = 0; i < shape.cols; i++){ cout << "------"; } cout << "-" << endl;
@@ -280,6 +295,9 @@ void TwoDimBoard::putPiece(int row, int col, Piece *piece){
 }
 
 TwoDimPiece::TwoDimPiece(Player *owner_, int value_, char id_) : Piece(owner_, value_, id_){
+}
+
+TwoDimPiece::~TwoDimPiece(){
 }
 
 bool TwoDimPiece::isOutBoard(int f_row, int f_col, int rows, int cols){
@@ -439,6 +457,9 @@ bool TwoDimStdPawn::allowedMove(int i_row, int i_col, int f_row, int f_col, TwoD
 TwoDimStdKnight::TwoDimStdKnight(Player *owner_):TwoDimPiece(owner_, 3, 'k'){
 }
 
+TwoDimStdKnight::~TwoDimStdKnight(){
+}
+
 bool TwoDimStdKnight::allowedMove(int i_row, int i_col, int f_row, int f_col, TwoDimBoard *board){
     int rows = board->getShape().rows;
     int cols = board->getShape().cols;
@@ -577,6 +598,8 @@ void ChessGame::startGame(PiecesOrderStyle orderStyle = PiecesOrderStyle::Standa
         winnerId = updatePlayersStatus();
     }
     cout << players[winnerId]->getName() << " is the winner" << endl;
+    board->deletePlayer(winnerId);
+    deletePlayers();
 }
 
 int ChessGame::updatePlayersStatus(){ // Returns id of winner or -1 in case there's no winner yet
@@ -617,3 +640,8 @@ void ChessGame::showPlayers(int curPlayer){
     }
     cout << endl;
 }
+ void ChessGame::deletePlayers(){
+    for(const auto& p: players){
+        delete p;
+    }
+ }

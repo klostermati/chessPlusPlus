@@ -17,6 +17,7 @@ void clearScreen();
 class Player{
     public:
         Player(string name_, int id_, char sign_);
+        ~Player();
         int getId();
         string getName();
         PlayerStatus getStatus();
@@ -33,6 +34,7 @@ class Piece;
 
 class Board{
     public:
+        virtual ~Board();
         virtual void orderPieces(const vector<Player*> &playerList, PiecesOrderStyle order_style = PiecesOrderStyle::Standard) = 0;
         virtual void showBoard() = 0;
         virtual bool movePiece(int i_row, int i_col, int f_row, int f_col, CondToWin condToWin) = 0;
@@ -49,6 +51,7 @@ class Piece{
         static map<char, string> blacks_map;
         static map<char, string> third_player_map;
         Piece(Player *owner_, int value_, char id_);
+        virtual ~Piece();
         virtual bool allowedMove(int i_row, int i_col, int f_row, int f_col, TwoDimBoard* board) = 0;
         Player* getOwner();
         int getValue();
@@ -88,6 +91,7 @@ class TwoDimBoard : public Board{
 class TwoDimPiece : public Piece {
     public:
         TwoDimPiece(Player *owner_, int value_, char id_);
+        virtual ~TwoDimPiece();
         bool isOutBoard(int f_row, int f_col, int rows, int cols);
         virtual bool allowedMove(int i_row, int i_col, int f_row, int f_col, TwoDimBoard* board) = 0;
         bool isInFreeLine(int i_row, int i_col, int f_row, int f_col, TwoDimBoard *board, Player *player);
@@ -107,6 +111,7 @@ class TwoDimStdPawn : public TwoDimPiece {
 class TwoDimStdKnight : public TwoDimPiece {
     public:
         TwoDimStdKnight(Player *owner_);
+        ~TwoDimStdKnight();
         bool allowedMove(int i_row, int i_col, int f_row, int f_col, TwoDimBoard *board);
 };
 
@@ -147,6 +152,7 @@ class ChessGame {
         Board *board;
         vector<Player*> players;
         CondToWin condToWin;
+        void deletePlayers();
 };
 
 #endif
