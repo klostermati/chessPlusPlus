@@ -17,9 +17,6 @@ Player::Player(string name_, int id_, char sign_)
     , sign(sign_){
 }
 
-Player::~Player(){
-}
-
 int Player::getId(){
     return id;
 }
@@ -44,7 +41,6 @@ Piece::Piece(Player *owner_, int value_, char id_)
     : owner(owner_)
     , value(value_)
     , id(id_) {
-    cout << "Piece const" << endl;
     if(owner->getId() == 0){ // white
         symbol = whites_map[id];
     } else if (owner->getId() == 1){ // black
@@ -85,7 +81,6 @@ Board::~Board(){
 
 TwoDimBoard::~TwoDimBoard(){
     // TODO: Delete news
-    cout << "TwoDimBoard dest" << endl;
     for(int row = 0; row < shape.rows; row++){
         delete[] board_pieces[row];
     }
@@ -106,11 +101,11 @@ bool TwoDimBoard::isFree(int row, int col){
 void TwoDimBoard::orderPieces(const vector<Player*> &playerList, PiecesOrderStyle order_style = PiecesOrderStyle::Standard){
     if(order_style == PiecesOrderStyle::Standard){
         if(shape.rows != 8 || shape.cols != 8){
-            cout << "Standard order style must have a 8x8 board" << endl;
+            throw runtime_error("Standard order style must have a 8x8 board");
             return;
         }
         if(playerList.size() != 2){
-            cout << "Standard order style must have 2 players" << endl;
+            throw runtime_error("Standard order style must have 2 players");
             return;
         }
         for(auto const& player : playerList){
@@ -132,11 +127,11 @@ void TwoDimBoard::orderPieces(const vector<Player*> &playerList, PiecesOrderStyl
         }
     } else if(order_style == PiecesOrderStyle::Baby) {
         if(shape.rows != 5 || shape.cols != 5){
-            cout << "Baby order style must have a 5x5 board" << endl;
+            throw runtime_error("Baby order style must have a 5x5 board");
             return;
         }
         if(playerList.size() != 2){
-            cout << "Baby order style must have 2 players" << endl;
+            throw runtime_error("Baby order style must have 2 players");
             return;
         }
         for(auto const& player : playerList){
@@ -155,11 +150,11 @@ void TwoDimBoard::orderPieces(const vector<Player*> &playerList, PiecesOrderStyl
         }
     } else if(order_style == PiecesOrderStyle::TwoKings) {
         if(shape.rows != 8 || shape.cols != 8){
-            cout << "TwoKings order style must have a 8x8 board" << endl;
+            throw runtime_error("TwoKings order style must have a 8x8 board");
             return;
         }
         if(playerList.size() != 2){
-            cout << "TwoKings order style must have 2 players" << endl;
+            throw runtime_error("TwoKings order style must have 2 players");
             return;
         }
         for(auto const& player : playerList){
@@ -181,11 +176,11 @@ void TwoDimBoard::orderPieces(const vector<Player*> &playerList, PiecesOrderStyl
         }
     } else if(order_style == PiecesOrderStyle::ThreePlayerVariation) {
         if(shape.rows != 9 || shape.cols != 10){
-            cout << "ThreePlayerVariation order style must have a 9x10 board" << endl;
+            throw runtime_error("ThreePlayerVariation order style must have a 9x10 board");
             return;
         }
         if(playerList.size() != 3){
-            cout << playerList.size() << "ThreePlayerVariation order style must have 3 players" << endl;
+            throw runtime_error("ThreePlayerVariation order style must have 3 players");
             return;
         }
         for(auto const& player : playerList){
@@ -455,9 +450,6 @@ bool TwoDimStdPawn::allowedMove(int i_row, int i_col, int f_row, int f_col, TwoD
 }
 
 TwoDimStdKnight::TwoDimStdKnight(Player *owner_):TwoDimPiece(owner_, 3, 'k'){
-}
-
-TwoDimStdKnight::~TwoDimStdKnight(){
 }
 
 bool TwoDimStdKnight::allowedMove(int i_row, int i_col, int f_row, int f_col, TwoDimBoard *board){

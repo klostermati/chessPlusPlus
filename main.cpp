@@ -2,7 +2,6 @@
 #include "lib/func.hpp"
 using namespace std;
 
-
 int main(void) {
     int mode;
     clearScreen();
@@ -23,49 +22,68 @@ int main(void) {
         TwoDimBoard my_std_board(my_std_board_shape);
         ChessGame my_game(CondToWin::KillKing);
         my_game.addBoard(my_std_board);
-        my_game.addPlayer("Garry");
-        my_game.addPlayer("Carlsen");
+        my_game.addPlayer("Garry Kasparov");
+        my_game.addPlayer("Magnus Carlsen");
         my_game.setCondToWin(CondToWin::KillKing);
-        my_game.startGame(PiecesOrderStyle::Standard);
+        try{
+            my_game.startGame(PiecesOrderStyle::Standard);
+        } catch (runtime_error &e) {
+            cout << e.what() << endl;
+        }
     } else if(mode == 2){ // Baby mode
         TwoDimShape my_std_board_shape = {5,5};
         TwoDimBoard my_std_board(my_std_board_shape);
         ChessGame my_game(CondToWin::KillKing);
         my_game.addBoard(my_std_board);
-        my_game.addPlayer("Garry");
-        my_game.addPlayer("Carlsen");
+        my_game.addPlayer("Garry Kasparov");
+        my_game.addPlayer("Magnus Carlsen");
         my_game.setCondToWin(CondToWin::KillKing);
-        my_game.startGame(PiecesOrderStyle::Baby);
+        try{
+            my_game.startGame(PiecesOrderStyle::Baby);
+        } catch (runtime_error &e) {
+            cout << e.what() << endl;
+        }
     } else if(mode == 3){ // Two kings mode
         TwoDimShape my_std_board_shape = {8,8};
         TwoDimBoard my_std_board(my_std_board_shape);
         ChessGame my_game(CondToWin::KillKing);
         my_game.addBoard(my_std_board);
-        my_game.addPlayer("Garry");
-        my_game.addPlayer("Carlsen");
+        my_game.addPlayer("Garry Kasparov");
+        my_game.addPlayer("Magnus Carlsen");
         my_game.setCondToWin(CondToWin::KillKing);
-        my_game.startGame(PiecesOrderStyle::TwoKings);
+        try{
+            my_game.startGame(PiecesOrderStyle::TwoKings);
+        } catch (runtime_error &e) {
+            cout << e.what() << endl;
+        }
     } else if(mode == 4){ // Three players mode
         TwoDimShape my_std_board_shape = {9,10};
         TwoDimBoard my_std_board(my_std_board_shape);
         ChessGame my_game(CondToWin::KillKing);
         my_game.addBoard(my_std_board);
-        my_game.addPlayer("Garry");
-        my_game.addPlayer("Carlsen");
-        my_game.addPlayer("Beth");
+        my_game.addPlayer("Garry Kasparov");
+        my_game.addPlayer("Magnus Carlsen");
+        my_game.addPlayer("Beth Harmon");
         my_game.setCondToWin(CondToWin::KillKing);
-        my_game.startGame(PiecesOrderStyle::ThreePlayerVariation);
+        try{
+            my_game.startGame(PiecesOrderStyle::ThreePlayerVariation);
+        } catch (runtime_error &e) {
+            cout << e.what() << endl;
+        }
     } else if(mode == 5){ // Kill queen mode
         TwoDimShape my_std_board_shape = {8,8};
         TwoDimBoard my_std_board(my_std_board_shape);
         ChessGame my_game(CondToWin::KillKing);
         my_game.addBoard(my_std_board);
-        my_game.addPlayer("Garry");
-        my_game.addPlayer("Carlsen");
+        my_game.addPlayer("Garry Kasparov");
+        my_game.addPlayer("Magnus Carlsen");
         my_game.setCondToWin(CondToWin::KillQueen);
-        my_game.startGame(PiecesOrderStyle::Standard);
+        try{
+            my_game.startGame(PiecesOrderStyle::Standard);
+        } catch (runtime_error &e) {
+            cout << e.what() << endl;
+        }
     } else {
         cout << "Invalid game mode" << endl;
     }
 }
-

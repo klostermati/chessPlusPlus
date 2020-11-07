@@ -17,7 +17,6 @@ void clearScreen();
 class Player{
     public:
         Player(string name_, int id_, char sign_);
-        ~Player();
         int getId();
         string getName();
         PlayerStatus getStatus();
@@ -111,7 +110,6 @@ class TwoDimStdPawn : public TwoDimPiece {
 class TwoDimStdKnight : public TwoDimPiece {
     public:
         TwoDimStdKnight(Player *owner_);
-        ~TwoDimStdKnight();
         bool allowedMove(int i_row, int i_col, int f_row, int f_col, TwoDimBoard *board);
 };
 
