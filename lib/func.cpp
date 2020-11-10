@@ -80,7 +80,6 @@ Board::~Board(){
 }
 
 TwoDimBoard::~TwoDimBoard(){
-    // TODO: Delete news
     for(int row = 0; row < shape.rows; row++){
         delete[] board_pieces[row];
     }
@@ -528,6 +527,12 @@ bool TwoDimStdQueen::allowedMove(int i_row, int i_col, int f_row, int f_col, Two
 
 ChessGame::ChessGame(CondToWin condToWin = CondToWin::KillKing) : board(nullptr) {}
 
+ChessGame::~ChessGame(){
+    for(const auto& p: players){
+        delete p;
+    }
+}
+
 void ChessGame::addBoard(Board &board_){
     board = &board_;
 }
@@ -591,7 +596,6 @@ void ChessGame::startGame(PiecesOrderStyle orderStyle = PiecesOrderStyle::Standa
     }
     cout << players[winnerId]->getName() << " is the winner" << endl;
     board->deletePlayer(winnerId);
-    deletePlayers();
 }
 
 int ChessGame::updatePlayersStatus(){ // Returns id of winner or -1 in case there's no winner yet
@@ -632,8 +636,3 @@ void ChessGame::showPlayers(int curPlayer){
     }
     cout << endl;
 }
- void ChessGame::deletePlayers(){
-    for(const auto& p: players){
-        delete p;
-    }
- }

@@ -71,6 +71,9 @@ class TwoDimBoard : public Board{
     public:
         TwoDimBoard(TwoDimShape shape_);
         ~TwoDimBoard();
+        // I defined my own destructor, so copy constructor and copy assignment should be defined. (rule of 3)
+        TwoDimBoard(const TwoDimBoard&) = delete;
+        TwoDimBoard& operator=(const TwoDimBoard&) = delete;
         TwoDimShape getShape(){
             return shape;
         }
@@ -140,6 +143,10 @@ class TwoDimStdQueen : public TwoDimPiece{
 class ChessGame {
     public:
         ChessGame(CondToWin condToWin);
+        ~ChessGame();
+        // I defined my own destructor, so copy constructor and copy assignment should be defined. (rule of 3)
+        ChessGame(const ChessGame&) = delete;
+        ChessGame& operator=(const ChessGame&) = delete;
         void addBoard(Board &board_);
         Player* addPlayer(const string &name);
         void setCondToWin(CondToWin condToWin_);
@@ -150,7 +157,6 @@ class ChessGame {
         Board *board;
         vector<Player*> players;
         CondToWin condToWin;
-        void deletePlayers();
 };
 
 #endif
