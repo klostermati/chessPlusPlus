@@ -1,4 +1,3 @@
-// Useless comment added
 #include <iostream>
 #include "lib/func.hpp"
 using namespace std;
